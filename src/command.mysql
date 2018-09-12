@@ -1,0 +1,9 @@
+use jawiki;
+
+drop table if exists entries;
+create table entries (
+    id int not null auto_increment primary key,
+    title varchar(255) not null,
+    content text not null,
+    key title (title)
+) default charset utf8;
