@@ -12,8 +12,3 @@ def load_xml(path):
         for line in f:
             parser.feed(line)
         return parser.close()
-
-def load_config():
-    path = os.path.dirname(os.path.abspath(__file__)) + "/../config.yml"
-    assert os.path.isfile(path), "file {} does not exist".format(path)
-    return load_yaml(path)

@@ -2,6 +2,7 @@ import sys
 import File
 import Database
 import Reader
+import Config
 
 def sample_page(db_handler):
     sql = "select * from entries limit 1"
@@ -10,9 +11,9 @@ def sample_page(db_handler):
     return record
 
 def main():
-    config = File.load_config()
+    Config.load()
 
-    db_handler = Database.MySQLHandler(config["database"])
+    db_handler = Database.MySQLHandler(Config.get("database"))
     db_handler.connect()
     page = sample_page(db_handler)
     print(Reader.get_plain_text(page["content"]))
