@@ -1,0 +1,19 @@
+body{
+    width: 980px;
+    margin: auto;
+}
+
+h1{
+    text-align: center;
+}
+
+table{
+    width: 980px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: solid 4px black;
+}
+
+td{
+    border: solid 4px black;
+}

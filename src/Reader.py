@@ -86,3 +86,9 @@ def get_plain_text(text):
         text = text[:match.start()] + text[match.end():]
 
     return text
+
+def get_sentences(text):
+    RE_NL = re.compile(r"\s+")
+    text = get_plain_text(text)
+    text = re.sub(RE_NL, "", text)
+    return text

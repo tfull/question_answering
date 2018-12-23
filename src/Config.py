@@ -6,11 +6,15 @@ DATA = None
 
 def load():
     global DATA
+    if DATA is not None:
+        return
     assert os.path.isfile(PATH), "file {} does not exist".format(PATH)
     DATA = File.load_yaml(PATH)
-    print(DATA)
 
 def get(key):
     if DATA is None:
         raise Exception("config is not loaded")
-    return DATA[key]
+    data = DATA
+    for k in key.split("."):
+        data = data[k]
+    return data

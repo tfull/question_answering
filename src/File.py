@@ -1,4 +1,3 @@
-import os
 import yaml
 import xml.etree.ElementTree
 
