@@ -19,7 +19,7 @@ $json = get_entry(null);
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <title>pa-su</title>
+  <title>Entry Checker</title>
   <link rel="stylesheet" href="css/index.css" type="text/css" />
 </head>
 <body>
