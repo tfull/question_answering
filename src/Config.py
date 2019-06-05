@@ -12,8 +12,9 @@ def load():
     DATA = File.load_yaml(PATH)
 
 def get(key):
+    global DATA
     if DATA is None:
-        raise Exception("config is not loaded")
+        load()
     data = DATA
     for k in key.split("."):
         data = data[k]

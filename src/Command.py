@@ -28,7 +28,6 @@ def get_entry(options):
     else:
         title = None
 
-    Config.load()
     db_handler = Database.MySQLHandler(Config.get("database"))
     db_handler.connect()
     if title is not None:

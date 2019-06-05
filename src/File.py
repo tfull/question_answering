@@ -3,7 +3,7 @@ import xml.etree.ElementTree
 
 def load_yaml(path):
     with open(path, "r") as stream:
-        return yaml.load(stream)
+        return yaml.load(stream, Loader=yaml.FullLoader)
 
 def load_xml(path):
     with open(path, "r") as f:
