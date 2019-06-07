@@ -1,2 +1,2 @@
-mysqlclient==1.3.12
+mysqlclient
 PyYAML==5.1
