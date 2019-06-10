@@ -17,8 +17,8 @@ def write(body, path):
         f.write("</wikipedia>\n")
 
 def main():
-    fname = Config.get("workspace") + "/" + Config.get("wikipedia")
-    dirname = Config.get("workspace") + "/" + Config.get("resource")
+    fname = Config.get("workspace.root") + "/" + Config.get("workspace.wikipedia")
+    dirname = Config.get("workspace.root") + "/" + Config.get("workspace.resource")
 
     flag = False
     body = []

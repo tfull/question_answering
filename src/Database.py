@@ -8,9 +8,9 @@ class MySQLHandler:
 
     def connect(self):
         config = self.config
-        self.connection = MySQLdb.connect(user=config["user"], passwd=config["password"], host=config["host"], db=config["dbname"], charset="utf8")
+        self.connection = MySQLdb.connect(user=config["user"], passwd=config["password"], host=config["host"], db=config["dbname"], charset="utf8mb4")
         self.cursor = self.connection.cursor(MySQLdb.cursors.DictCursor)
 
     def close(self):
-        self.connection.close()
         self.cursor.close()
+        self.connection.close()

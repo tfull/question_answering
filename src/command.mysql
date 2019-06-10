@@ -4,9 +4,9 @@ drop table if exists entries;
 create table entries (
     id int not null auto_increment primary key,
     title varchar(255) not null,
-    content text not null,
+    content mediumtext not null,
     key idx_title (title)
-) default charset utf8;
+) default charset utf8mb4;
 
 drop table if exists redirections;
 create table redirections (
@@ -15,12 +15,12 @@ create table redirections (
     target varchar(255) not null,
     key idx_source (source),
     key idx_target (target)
-) default charset utf8;
+) default charset utf8mb4;
 
 drop table if exists raw_entries;
 create table raw_entries (
     id int not null auto_increment primary key,
     entry_id int not null,
-    content text not null,
+    content mediumtext not null,
     key idx_entry_id (entry_id)
-) default charset utf8;
+) default charset utf8mb4;

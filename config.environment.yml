@@ -1,0 +1,17 @@
+database:
+    user: QA_DATABASE_USER
+    password: QA_DATABASE_PASSWORD
+    dbname: QA_DATABASE_NAME
+    host: QA_DATABASE_HOST
+
+workspace:
+  root: QA_WORKSPACE_ROOT
+  wikipedia: QA_WORKSPACE_WIKIPEDIA
+  resource: QA_WORKSPACE_RESOURCE
+
+api:
+    port: QA_API_PORT
+
+log:
+  level: QA_LOG_LEVEL
+  path: QA_LOG_PATH
