@@ -3,13 +3,14 @@ import re
 import argparse
 import glob
 
+import Base
 import Config
 import Property
 import Database
 import File
 import Logger
 
-def insert(db_handler, page):
+def insert(page):
     title = page.find("title").text
 
     for rm in Property.get("extra_titles"):
@@ -21,7 +22,7 @@ def insert(db_handler, page):
 
     if redirect is not None:
         target = redirect.attrib["title"]
-        db_handler.cursor.execute("insert into redirections (source, target) values (%s, %s)", (title, target))
+        Database.execute("insert into redirections (source, target) values (%s, %s)", (title, target))
         Logger.info("Redirect: " + title + " -> " + target)
         return
 
@@ -32,17 +33,16 @@ def insert(db_handler, page):
         Logger.info("Empty: " + title)
         return 
 
-    db_handler.cursor.execute("insert into entries (title, content) values (%s, %s)", (title, text))
+    Database.execute("insert into entries (title, content) values (%s, %s)", (title, text))
     Logger.info("Entry: " + title)
 
-def read(db_handler, path):
+def read(path):
     tree = File.load_xml(path)
     for page in tree.findall("page"):
-        insert(db_handler, page)
+        insert(page)
 
 def main(args):
-    db_handler = Database.MySQLHandler(Config.get("database"))
-    db_handler.connect()
+    Base.initialize()
 
     paths = args.paths
 
@@ -53,13 +53,12 @@ def main(args):
     for path in paths:
         sys.stdout.write("\033[2K\033[G" + str(path))
         sys.stdout.flush()
-        read(db_handler, path)
-        db_handler.connection.commit()
+        read(path)
+        Database.commit()
 
-    sys.stdout.write("\033[2K\033[G")
-    sys.stdout.write("complete {} files!\n".format(len(paths)))
+    sys.stdout.write("\033[2K\033[G" + "complete {} files!\n".format(len(paths)))
 
-    db_handler.close()
+    Base.finalize()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "Master Data Loader")

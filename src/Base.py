@@ -1,7 +1,12 @@
 import Logger
+import Database
 
 class EricaException():
-	pass
+    pass
 
 def initialize():
-	Logger.initialie()
+    Logger.initialize()
+    Database.initialize()
+
+def finalize():
+    Database.finalize()
