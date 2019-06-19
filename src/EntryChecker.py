@@ -2,6 +2,7 @@ import falcon
 from wsgiref import simple_server
 import json
 
+import Base
 import Config
 import Command
 
@@ -11,9 +12,9 @@ class EntryChecker(object):
         resp.body = json.dumps(result)
 
 if __name__ == '__main__':
-    Config.load()
+    Base.initialize()
     app = falcon.API()
     app.add_route("/", EntryChecker())
     httpd = simple_server.make_server("127.0.0.1", Config.get("api.port"), app)
     httpd.serve_forever()
-
+    Base.finalize()

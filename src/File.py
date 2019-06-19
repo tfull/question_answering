@@ -8,6 +8,8 @@ def load_yaml(path):
 def load_xml(path):
     with open(path, "r") as f:
         parser = xml.etree.ElementTree.XMLParser()
+
         for line in f:
             parser.feed(line)
+
         return parser.close()
