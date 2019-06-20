@@ -1,7 +1,59 @@
-database:
-    user:
-    password: 
-    dbname:
-    host:
-api:
-    port:
+values:
+  database:
+    user: # database.user
+    password: # database.password
+    dbname: # database.dbname
+    host: # database.host
+    charset: # database.charset
+
+  workspace:
+    root: # workspace.root
+    wikipedia: # workspace.wikipedia
+    resource: # workspace.resource
+
+  api:
+      port: # api.port
+
+  log:
+    level: # log.level
+    path: # log.path
+
+environments:
+  database:
+    user: ERICA_DATABASE_USER
+    password: ERICA_DATABASE_PASSWORD
+    dbname: ERICA_DATABASE_DBNAME
+    host: ERICA_DATABASE_HOST
+    charset: ERICA_DATABASE_CHARSET
+
+  workspace:
+    root: ERICA_WORKSPACE_ROOT
+    wikipedia: ERICA_WORKSPACE_WIKIPEDIA
+    resource: ERICA_WORKSPACE_RESOURCE
+
+  api:
+    port: ERICA_API_PORT
+
+  log:
+    level: ERICA_LOG_LEVEL
+    path: ERICA_LOG_PATH
+
+types:
+  database:
+    user: string
+    password: string
+    dbname: string
+    host: string
+    charset: string
+
+  workspace:
+    root: string
+    wikipedia: string
+    resource: string
+
+  api:
+    port: integer
+
+  log:
+    level: string
+    path: string

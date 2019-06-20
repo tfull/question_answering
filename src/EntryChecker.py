@@ -15,6 +15,6 @@ if __name__ == '__main__':
     Base.initialize()
     app = falcon.API()
     app.add_route("/", EntryChecker())
-    httpd = simple_server.make_server("127.0.0.1", Config.get("api.port"), app)
+    httpd = simple_server.make_server("0.0.0.0", Config.get("api.port"), app)
     httpd.serve_forever()
     Base.finalize()
