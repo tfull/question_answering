@@ -3,17 +3,17 @@ import re
 import argparse
 import glob
 
-import Base
-import Config
-import Property
-import Database
-import File
-import Logger
+from . import base as Base
+from . import config as Config
+from . import constant as Constant
+from . import database as Database
+from . import file as File
+from . import logger as Logger
 
 def insert(page):
     title = page.find("title").text
 
-    for rm in Property.get("extra_titles"):
+    for rm in Constant.extra_titles:
         if title[:len(rm) + 1] == rm + ":":
             Logger.info("Remove: " + title)
             return

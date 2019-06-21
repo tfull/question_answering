@@ -1,9 +1,10 @@
 import sys
 import random
-import File
-import Database
-import Reader
-import Config
+
+from . import file as File
+from . import database as Database
+from . import reader as Reader
+from . import config as Config
 
 def get_raw_entry(title):
     sql = "select * from entries where title = %s limit 1"

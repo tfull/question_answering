@@ -1,6 +1,6 @@
 import os
-import File
-import threading
+
+from . import file as File
 
 PATH = os.path.dirname(os.path.abspath(__file__)) + "/../config.yml"
 VALUES = None

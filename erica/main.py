@@ -1,5 +1,6 @@
 import sys
-import Command
+
+from . import command as Command
 
 def main():
     print(Command.get_entry({}))

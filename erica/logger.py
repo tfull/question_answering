@@ -1,6 +1,6 @@
 import logging
 
-import Config
+from . import config as Config
 
 LOGGER = None
 

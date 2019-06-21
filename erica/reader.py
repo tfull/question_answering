@@ -1,5 +1,6 @@
 import re
-import Property
+
+from . import constant as Constant
 
 RE_COMMENT    = re.compile(r"<!--.*?-->", re.DOTALL)
 RE_NOWIKI     = re.compile(r"<nowiki>.*?</nowiki>", re.DOTALL)
@@ -71,7 +72,7 @@ def get_plain_text(text):
         if link[:9] == "Category:":
             flag = False
         else:
-            for ns in Property.get("extra_titles"):
+            for ns in Constant.extra_titles:
                 if link[:len(ns) + 1] == ns + ":":
                     flag = False
         if flag:

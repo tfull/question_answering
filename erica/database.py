@@ -1,6 +1,6 @@
 import MySQLdb
 
-import Config
+from . import config as Config
 
 CONNECTION = None
 CURSOR = None

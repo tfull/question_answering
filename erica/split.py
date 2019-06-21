@@ -2,7 +2,7 @@ import sys
 import re
 import os
 
-import Config
+from . import config as Config
 
 RE_START = re.compile(r"<page>")
 RE_END = re.compile(r"</page>")

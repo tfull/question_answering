@@ -1,5 +1,5 @@
-import Logger
-import Database
+from . import logger as Logger
+from . import database as Database
 
 def initialize():
     Logger.initialize()
