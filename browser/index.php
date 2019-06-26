@@ -2,16 +2,24 @@
 require_once("config.php");
 
 function get_entry($title){
-    $curl = curl_init();
-    $options = array(
-        CURLOPT_URL => "http://" . API_SERVER_NAME . ":" . (string)API_SERVER_PORT . "?" . http_build_query(array("title" => $title)),
-        CURLOPT_CUSTOMREQUEST => "GET",
-        CURLOPT_RETURNTRANSFER => true
-    );
-    curl_setopt_array($curl, $options);
-    $source = curl_exec($curl);
-    curl_close($curl);
-    return json_decode($source, true);
+  $curl = curl_init();
+  $options = array(
+    CURLOPT_URL => "http://" . API_SERVER_NAME . ":" . (string)API_SERVER_PORT . "?" . http_build_query(array("title" => $title)),
+    CURLOPT_CUSTOMREQUEST => "GET",
+    CURLOPT_RETURNTRANSFER => true
+  );
+  curl_setopt_array($curl, $options);
+  $source = curl_exec($curl);
+  curl_close($curl);
+  return json_decode($source, true);
+}
+
+function display_paragraphs($paragraphs){
+  $html_string = "";
+  foreach($paragraphs as $paragraph){
+    $html_string = $html_string .  "<p>" . htmlspecialchars($paragraph[1]) . "</p>";
+  }
+  return $html_string;
 }
 
 $json = get_entry(null);
@@ -29,7 +37,11 @@ $json = get_entry(null);
       <tbody>
         <tr>
           <td><?php echo htmlspecialchars($json["content"]); ?></td>
-          <td><?php echo htmlspecialchars($json["sentences"]); ?></td>
+          <td><?php echo htmlspecialchars($json["surface"]); ?></td>
+        </tr>
+        <tr>
+          <td><?php echo display_paragraphs($json["segmented_content"]); ?></td>
+          <td><?php echo display_paragraphs($json["segmented_surface"]); ?></td>
         </tr>
       </tbody>
     </table>

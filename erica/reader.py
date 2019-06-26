@@ -18,19 +18,15 @@ RE_TAG        = re.compile(r"<([a-z]+)(?: .*?)?>.*?</\1>")
 RE_LINK_I     = re.compile(r"\[\[[^\[]*?\]\]")
 RE_LINK_S     = re.compile(r"\[\[(.*?)\|(.*?)\]\]")
 RE_SQ         = re.compile(r"\[[^\[]*?\]")
-
-NAMESPACES = [ "Media", "Special", "Talk", "User", "User talk", "Wikipedia",
-    "Wikipedia talk", "File", "File talk", "MediaWiki", "MediaWiki talk",
-    "Template", "Template talk", "Help", "Help talk", "Category", "Category talk",
-    "Portal", "Portal talk", "Book", "Book talk", "Draft", "Draft talk",
-    "Education Program", "Education Program talk", "TimedText", "TimedText talk",
-    "Module", "Module talk", "Image" ]
+RE_CHAPTER    = re.compile(r"={2,}(.*?)={2,}")
 
 def get_plain_text(text):
     text = re.sub(RE_COMMENT, "", text)
     text = re.sub(RE_NOWIKI, "", text)
+
     for i in range(5):
         text = re.sub(RE_BRACKET, "", text)
+
     text = re.sub(RE_REF_SINGLE, "", text)
     text = re.sub(RE_REF_PAIR, "", text)
     text = re.sub(RE_MATH, "", text)
@@ -39,20 +35,28 @@ def get_plain_text(text):
 
     while True:
         match = re.search(RE_TAG, text)
+
         if match is None:
             break
+
         m = re.match(RE_DIV, match.group())
+
         if m:
             text = text[:match.start()] + m.group(1) + text[match.end():]
             continue
+
         m = re.match(RE_SPAN, match.group())
+
         if m:
             text = text[:match.start()] + m.group(1) + text[match.end():]
             continue
+
         m = re.match(RE_SUB, match.group()) or re.match(RE_SUP, match.group())
+
         if m:
             text = text[:match.start()] + m.group(1) + text[match.end():]
             continue
+
         text = text[:match.start()] + match.group(1) +  text[match.end():]
 
     while True:
@@ -87,6 +91,26 @@ def get_plain_text(text):
         text = text[:match.start()] + text[match.end():]
 
     return text
+
+def split_text_to_paragraphs(text):
+    paragraphs = []
+    previous = "*"
+
+    while True:
+        match = re.search(RE_CHAPTER, text)
+
+        if match is None:
+            break
+
+        paragraphs.append((previous, text[:match.start()].strip()))
+
+        previous = match.group(1)
+        text = text[match.end():]
+
+    if len(text) > 0:
+        paragraphs.append((previous, text))
+
+    return paragraphs
 
 def get_sentences(text):
     RE_NL = re.compile(r"\s+")
