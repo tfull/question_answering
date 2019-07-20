@@ -17,30 +17,30 @@ RE_END = re.compile(r"</page>")
 def reset_database():
     db = Config.get("database.dbname")
 
-    Database.execute("drop table if exists {db}.entries".format(db = db))
-    Database.execute("create table {db}.entries ( \
+    Database.execute("drop table if exists entries")
+    Database.execute("create table entries ( \
         id int not null auto_increment primary key, \
         title varchar(255) not null, \
         content mediumtext not null, \
         key idx_title (title) \
-        ) default charset utf8mb4".format(db = db))
+        ) default charset utf8mb4 collate utf8mb4_bin")
 
-    Database.execute("drop table if exists {db}.redirections".format(db = db))
-    Database.execute("create table {db}.redirections ( \
+    Database.execute("drop table if exists redirections")
+    Database.execute("create table redirections ( \
         id int not null auto_increment primary key, \
         source varchar(255) not null, \
         target varchar(255) not null, \
         key idx_source (source), \
         key idx_target (target) \
-        ) default charset utf8mb4".format(db = db))
+        ) default charset utf8mb4 collate utf8mb4_bin")
 
-    Database.execute("drop table if exists {db}.raw_entries".format(db = db))
-    Database.execute("create table {db}.raw_entries ( \
+    Database.execute("drop table if exists plain_texts")
+    Database.execute("create table plain_texts ( \
         id int not null auto_increment primary key, \
         entry_id int not null, \
-        content mediumtext not null, \
+        `text` mediumtext not null, \
         key idx_entry_id (entry_id) \
-        ) default charset utf8mb4".format(db = db))
+        ) default charset utf8mb4 collate utf8mb4_bin")
 
 def write(body, path):
     with open(path, "w") as f:
