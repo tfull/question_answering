@@ -10,6 +10,7 @@ from . import constant as Constant
 from . import database as Database
 from . import file as File
 from . import logger as Logger
+from . import reader as Reader
 
 RE_START = re.compile(r"<page>")
 RE_END = re.compile(r"</page>")
@@ -23,7 +24,7 @@ def reset_database():
         title varchar(255) not null, \
         content mediumtext not null, \
         key idx_title (title) \
-        ) default charset utf8mb4 collate utf8mb4_bin")
+        ) default charset utf8 collate utf8_bin")
 
     Database.execute("drop table if exists redirections")
     Database.execute("create table redirections ( \
@@ -32,7 +33,7 @@ def reset_database():
         target varchar(255) not null, \
         key idx_source (source), \
         key idx_target (target) \
-        ) default charset utf8mb4 collate utf8mb4_bin")
+        ) default charset utf8 collate utf8_bin")
 
     Database.execute("drop table if exists plain_texts")
     Database.execute("create table plain_texts ( \
@@ -40,7 +41,7 @@ def reset_database():
         entry_id int not null, \
         `text` mediumtext not null, \
         key idx_entry_id (entry_id) \
-        ) default charset utf8mb4 collate utf8mb4_bin")
+        ) default charset utf8 collate utf8_bin")
 
 def write(body, path):
     with open(path, "w") as f:
@@ -111,6 +112,7 @@ def insert(page):
         Logger.info("Empty: " + title)
         return 
 
+    text = "".join(filter(lambda c: ord(c) < 0x10000, text))
     Database.execute("insert into entries (title, content) values (%s, %s)", (title, text))
     Logger.info("Entry: " + title)
 
@@ -131,10 +133,26 @@ def load_to_database():
 
     sys.stdout.write("\033[2K\033[G" + "complete {} files!\n".format(len(paths)))
 
-if __name__ == '__main__':
-    Base.initialize()
-    parser = argparse.ArgumentParser(description = "Master Data Loader")
-    parser.add_argument("paths", nargs = "*", help = "XML files")
-    args = parser.parse_args(sys.argv[1:])
-    main(args)
-    Base.finalize()
+def insert_plain_text():
+    Database.execute("select max(id) from entries")
+    record = Database.fetchone()
+    count = record["max(id)"]
+
+    for i in range(count):
+        entry_id = i + 1
+        Database.execute("select content from entries where id = %s", (entry_id,))
+        record = Database.fetchone()
+
+        content = record["content"]
+
+        paragraphs = Reader.split_text_to_paragraphs(Reader.get_plain_text(content))
+        text = "\n".join([sentence[1] for sentence in paragraphs])
+
+        Database.execute("select 1 from plain_texts where entry_id = %s", (entry_id,))
+
+        if Database.fetchone():
+            Database.execute("update plain_texts set `text` = %s where entry_id = %s", (text, entry_id))
+        else:
+            Database.execute("insert into plain_texts (entry_id, `text`) values (%s, %s)", (entry_id, text))
+
+        Database.commit()

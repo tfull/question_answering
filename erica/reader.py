@@ -105,7 +105,7 @@ def split_text_to_paragraphs(text):
         paragraphs.append((previous, text[:match.start()].strip()))
 
         previous = match.group(1)
-        text = text[match.end():]
+        text = text[match.end():].strip()
 
     if len(text) > 0:
         paragraphs.append((previous, text))

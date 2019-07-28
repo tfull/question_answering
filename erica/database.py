@@ -2,49 +2,80 @@ import MySQLdb
 
 from . import config as Config
 
-CONNECTION = None
-CURSOR = None
+CONNECTIONS = None
+CURSORS = None
 
 def initialize():
-    global CONNECTION
-    global CURSOR
+    global CONNECTIONS
+    global CURSORS
+
+    CONNECTIONS = []
+    CURSORS = []
+
+    new()
+
+def new():
+    global CONNECTIONS
+    global CURSORS
+
+    charset = "utf8"
 
     config = Config.get("database")
-    CONNECTION = MySQLdb.connect(
+    connection = MySQLdb.connect(
         user = config["user"],
         passwd = config["password"],
         host = config["host"],
         db = config["dbname"],
-        charset = config["charset"]
+        charset = charset
     )
-    CURSOR = CONNECTION.cursor(MySQLdb.cursors.DictCursor)
+    cursor = connection.cursor(MySQLdb.cursors.DictCursor)
+
+    cursor.execute("SET NAMES {}".format(charset))
+    cursor.execute("SET CHARACTER SET {}".format(charset))
+    cursor.execute("SET character_set_connection={}".format(charset))
+
+    CONNECTIONS.append(connection)
+    CURSORS.append(cursor)
+
+    return len(CONNECTIONS)
 
 def finalize():
-    global CONNECTION
-    global CURSOR
+    global CONNECTIONS
+    global CURSORS
 
-    CURSOR.close()
-    CONNECTION.close()
+    for cursor in CURSORS:
+        cursor.close()
 
-def execute(query, parameters = None):
-    global CURSOR
+    for connection in CONNECTIONS:
+        connection.close()
+
+def execute(query, parameters = None, *, handler_id = 1):
+    global CURSORS
+
+    cursor = CURSORS[handler_id - 1]
 
     if parameters is None:
-        CURSOR.execute(query)
+        cursor.execute(query)
     else:
-        CURSOR.execute(query, parameters)
+        cursor.execute(query, parameters)
 
-def fetchone():
-    global CURSOR
+def fetchone(handler_id = 1):
+    global CURSORS
 
-    return CURSOR.fetchone()
+    cursor = CURSORS[handler_id - 1]
 
-def fetchall():
-    global CURSOR
+    return cursor.fetchone()
 
-    return CURSOR.fetchall()
+def fetchall(handler_id = 1):
+    global CURSORS
 
-def commit():
-    global CONNECTION
+    cursor = CURSORS[handler_id - 1]
 
-    CONNECTION.commit()
+    return cursor.fetchall()
+
+def commit(handler_id = 1):
+    global CONNECTIONS
+
+    connection = CONNECTIONS[handler_id - 1]
+
+    connection.commit()
