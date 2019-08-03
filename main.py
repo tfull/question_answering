@@ -1,12 +1,12 @@
 import sys
 
-def split():
+def split(arguments):
     import erica.base
     import erica.master
 
     erica.master.split()
 
-def load():
+def load(arguments):
     import erica.master
     import erica.base
 
@@ -15,10 +15,10 @@ def load():
     erica.master.load_to_database()
     erica.base.finalize()
 
-def read():
+def read(arguments):
     pass
 
-def insert_plain_text():
+def insert_plain_text(arguments):
     import erica.master
     import erica.base
 
@@ -26,18 +26,33 @@ def insert_plain_text():
     erica.master.insert_plain_text()
     erica.base.finalize()
 
-def initialize_method1():
+def method1_build(arguments):
     import erica.base
     import erica.master
     import erica.brain
+
     erica.base.initialize()
     erica.brain.build()
-    erica.brain.load()
+    erica.base.finalize()
+
+def method1_load(arguments):
+    import erica.base
+    import erica.master
+    import erica.brain
+
+    inf = None
+    sup = None
+
+    if len(arguments) > 0:
+        inf, sup = [int(x) for x in arguments[0].split(":")]
+
+    erica.base.initialize()
+    erica.brain.load(inf, sup)
     erica.base.finalize()
 
 if __name__ == '__main__':
     command = sys.argv[1]
 
-    methods = { "split": split, "load": load, "insert_plain_text": insert_plain_text, "m1:build": initialize_method1, "read": read }
+    methods = { "split": split, "load": load, "insert_plain_text": insert_plain_text, "m1:build": method1_build, "m1:load": method1_load, "read": read }
     
-    methods[command]()
+    methods[command](sys.argv[2:])
