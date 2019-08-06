@@ -50,9 +50,25 @@ def method1_load(arguments):
     erica.brain.load(inf, sup)
     erica.base.finalize()
 
+def method1_ask(arguments):
+    import erica.base
+    import erica.master
+    import erica.brain
+
+    erica.base.initialize()
+    erica.brain.ask(arguments[0])
+    erica.base.finalize()
+
 if __name__ == '__main__':
     command = sys.argv[1]
 
-    methods = { "split": split, "load": load, "insert_plain_text": insert_plain_text, "m1:build": method1_build, "m1:load": method1_load, "read": read }
+    methods = { 
+        "split": split,
+        "load": load, 
+        "insert_plain_text": insert_plain_text,
+        "m1:build": method1_build,
+        "m1:load": method1_load, 
+        "m1:ask": method1_ask,
+        "read": read }
     
     methods[command](sys.argv[2:])

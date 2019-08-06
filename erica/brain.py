@@ -1,6 +1,7 @@
 from janome.tokenizer import Tokenizer
 from . import database as Database
 from collections import defaultdict
+import math
 
 def build():
     Database.execute("drop table if exists m1_words")
@@ -21,7 +22,7 @@ def build():
         ) default charset utf8 collate utf8_bin")
 
 def load(inf = None, sup = None):
-    handler_id = Database.new()
+    tokenizer = Tokenizer()
 
     Database.execute("select max(entry_id) from plain_texts")
     record = Database.fetchone()
@@ -59,10 +60,8 @@ def load(inf = None, sup = None):
 
         Database.commit()
 
-def read_text(text):
+def read_text(tokenizer, text):
     dictionary = defaultdict(int)
-
-    tokenizer = Tokenizer()
 
     for sentence in text.split("\n"):
         for token in tokenizer.tokenize(sentence):
@@ -70,3 +69,90 @@ def read_text(text):
             dictionary[word] += 1
 
     return dictionary
+
+def ask(query):
+    tokenizer = Tokenizer()
+    words = tokenizer.tokenize(query, wakati = True)
+
+    n_entries = count_entries()
+    print(n_entries, "entries in database")
+    n_words = len(words)
+    print(n_words, "words in sentence")
+
+    word_count_map = count_words(words)
+    print("word_count_map:", word_count_map)
+    word_id_count_map = word_to_id(word_count_map)
+    print("word_id_count_map:", word_id_count_map)
+    word_id_count_map = extract_important_words(word_id_count_map, 0.1, n_entries)
+    print("word_id_count_map:", word_id_count_map)
+
+    entry_id_list = gather_related_entry_id_list(word_id_count_map)
+
+    candidates = []
+
+    for entry_id in entry_id_list:
+        entry_score = 0
+        Database.execute("select * from m1_word_counts where entry_id = %s", (entry_id,))
+        records = Database.fetchall()
+        n_words_in_entry = sum([record["count"] for record in records])
+        for record in records:
+            word_id = record["m1_word_id"]
+            count = record["count"]
+            if word_id in word_id_count_map:
+                sentence_tf = word_id_count_map[word_id] / n_words
+                entry_tf = count / n_words_in_entry
+                entry_idf = n_entries / math.log(document_frequency(word_id) + 1, 2)
+
+                entry_score += sentence_tf * entry_tf * entry_idf
+        print("scoring:", entry_id, "->", entry_score)
+        candidates.append((entry_id, entry_score))
+
+    for candidate in sorted(candidates, key = (lambda x: -x[0])):
+        print(candidate[0], candidate[1])
+
+def extract_important_words(word_id_count_map, threshold, n_entries):
+    dictionary = {}
+
+    for word_id, count in word_id_count_map.items():
+        if document_frequency(word_id) / n_entries < threshold:
+            dictionary[word_id] = count
+
+    return dictionary
+
+def document_frequency(word_id):
+    Database.execute("select count(1) from m1_word_counts where m1_word_id = %s", (word_id,))
+    record = Database.fetchone()
+    return record["count(1)"]
+
+def query_list_arguments(n):
+    return ", ".join(["%s" for i in range(n)])
+
+def count_entries():
+    Database.execute("select count(distinct entry_id) from m1_word_counts")
+    record = Database.fetchone()
+
+    return record["count(distinct entry_id)"]
+
+def count_words(words):
+    dd = defaultdict(int)
+
+    for word in words:
+        dd[word] += 1
+
+    return dd
+
+def word_to_id(word_count_map):
+    Database.execute("select * from m1_words where word in ({})".format(query_list_arguments(len(word_count_map))), tuple(word_count_map.keys()))
+    records = Database.fetchall()
+
+    dd = {}
+
+    for record in records:
+        dd[record["id"]] = word_count_map[record["word"]]
+
+    return dd
+
+def gather_related_entry_id_list(word_id_count_map):
+    Database.execute("select entry_id from m1_word_counts where m1_word_id in ({}) group by entry_id".format(query_list_arguments(len(word_id_count_map))), tuple(word_id_count_map.keys()))
+
+    return [record["entry_id"] for record in Database.fetchall()]
