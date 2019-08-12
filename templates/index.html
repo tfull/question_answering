@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>質問応答</title>
+</head>
+<body>
+  <form method="post" action="">
+    <textarea name="query" rows="5" cols="40" placeholder="質問を入力してください。"></textarea>
+    <input type="submit" value="尋ねる" />
+  </form>
+  <div>
+    <div id="question">{{ question }}</div>
+    <div id="answer">{{ answer }}</div>
+  </div>
+</body>
+</html>

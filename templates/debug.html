@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="/static/css/debug.css" type="text/css" />
+  <title>動作確認</title>
+</head>
+<body>
+  <h1>{{ title }}</h1>
+  <table>
+    <tbody>
+      <tr>
+        <td>{{ content }}</td>
+        <td>{{ surface }}</td>
+      </tr>
+      <tr>
+        <td>
+          {% for paragraph in segmented_content %}
+            <p>{{ paragraph[1] }}</p>
+          {% endfor %}
+        </td>
+        <td>
+          {% for paragraph in segmented_surface %}
+            <p>{{ paragraph[1] }}</p>
+          {% endfor %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

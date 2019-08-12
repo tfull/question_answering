@@ -62,12 +62,12 @@ def method1_ask(arguments):
 if __name__ == '__main__':
     command = sys.argv[1]
 
-    methods = { 
+    methods = {
         "split": split,
-        "load": load, 
+        "load": load,
         "insert_plain_text": insert_plain_text,
         "m1:build": method1_build,
-        "m1:load": method1_load, 
+        "m1:load": method1_load,
         "m1:ask": method1_ask,
         "read": read }
     

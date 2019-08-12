@@ -19,17 +19,17 @@ td{
 }
 
 td p:nth-child(4n+1){
-	background-color: #ffffee;
+    background-color: #ffffee;
 }
 
 td p:nth-child(4n+2){
-	background-color: #ffeeff;
+    background-color: #ffeeff;
 }
 
 td p:nth-child(4n+3){
-	background-color: #eeffff;
+    background-color: #eeffff;
 }
 
 td p:nth-child(4n){
-	background-color: #eeeeff;
+    background-color: #eeeeff;
 }

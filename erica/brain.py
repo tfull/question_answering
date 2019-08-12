@@ -40,7 +40,7 @@ def load(inf = None, sup = None):
         record = Database.fetchone()
         text = record["text"]
 
-        dictionary = read_text(text)
+        dictionary = read_text(tokenizer, text)
 
         for word in dictionary:
             if len(word) > 255:
@@ -83,10 +83,11 @@ def ask(query):
     print("word_count_map:", word_count_map)
     word_id_count_map = word_to_id(word_count_map)
     print("word_id_count_map:", word_id_count_map)
-    word_id_count_map = extract_important_words(word_id_count_map, 0.1, n_entries)
+    word_id_count_map = extract_important_words(word_id_count_map, 0.4, n_entries)
     print("word_id_count_map:", word_id_count_map)
 
     entry_id_list = gather_related_entry_id_list(word_id_count_map)
+    print(len(entry_id_list), "candidates")
 
     candidates = []
 
@@ -101,14 +102,27 @@ def ask(query):
             if word_id in word_id_count_map:
                 sentence_tf = word_id_count_map[word_id] / n_words
                 entry_tf = count / n_words_in_entry
-                entry_idf = n_entries / math.log(document_frequency(word_id) + 1, 2)
+                entry_idf = math.log(n_entries / document_frequency(word_id), 2)
 
                 entry_score += sentence_tf * entry_tf * entry_idf
-        print("scoring:", entry_id, "->", entry_score)
-        candidates.append((entry_id, entry_score))
+        candidates = ranking(candidates, (entry_id, entry_score))
 
-    for candidate in sorted(candidates, key = (lambda x: -x[0])):
-        print(candidate[0], candidate[1])
+    if len(candidates) == 0:
+        return None
+
+    for candidate in candidates:
+        print(entry_id_to_title(candidate[0]), candidate[1])
+
+    return entry_id_to_title(candidates[0][0])
+
+def entry_id_to_title(entry_id):
+    Database.execute("select title from entries where id = %s", (entry_id,))
+    record = Database.fetchone()
+
+    return record["title"]
+
+def ranking(sorted_candidates, item):
+    return sorted(sorted_candidates + [item], key = lambda x: -x[1])[:20]
 
 def extract_important_words(word_id_count_map, threshold, n_entries):
     dictionary = {}
