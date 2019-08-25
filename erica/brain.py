@@ -1,7 +1,9 @@
 from janome.tokenizer import Tokenizer
-from . import database as Database
 from collections import defaultdict
 import math
+
+from . import database as Database
+from . import logger as Logger
 
 def build():
     Database.execute("drop table if exists m1_words")
@@ -75,45 +77,68 @@ def ask(query):
     words = tokenizer.tokenize(query, wakati = True)
 
     n_entries = count_entries()
-    print(n_entries, "entries in database")
+
+    Logger.info(str(n_entries) + " entries in database")
+
     n_words = len(words)
-    print(n_words, "words in sentence")
+
+    Logger.info(str(n_words) + " words in sentence")
 
     word_count_map = count_words(words)
-    print("word_count_map:", word_count_map)
+
+    Logger.info("word_count_map: " + str(word_count_map))
+
     word_id_count_map = word_to_id(word_count_map)
-    print("word_id_count_map:", word_id_count_map)
+
+    Logger.info("word_id_count_map: " + str(word_id_count_map))
+
     word_id_count_map = extract_important_words(word_id_count_map, 0.4, n_entries)
-    print("word_id_count_map:", word_id_count_map)
+
+    Logger.info("word_id_count_map: " + str(word_id_count_map))
+
+    vec_q = word_id_count_map
 
     entry_id_list = gather_related_entry_id_list(word_id_count_map)
-    print(len(entry_id_list), "candidates")
+    Logger.info(str(len(entry_id_list)) + " candidates")
 
     candidates = []
 
     for entry_id in entry_id_list:
-        entry_score = 0
         Database.execute("select * from m1_word_counts where entry_id = %s", (entry_id,))
         records = Database.fetchall()
-        n_words_in_entry = sum([record["count"] for record in records])
-        for record in records:
-            word_id = record["m1_word_id"]
-            count = record["count"]
-            if word_id in word_id_count_map:
-                sentence_tf = word_id_count_map[word_id] / n_words
-                entry_tf = count / n_words_in_entry
-                entry_idf = math.log(n_entries / document_frequency(word_id), 2)
 
-                entry_score += sentence_tf * entry_tf * entry_idf
+        sentence_map = { record["m1_word_id"]: record["count"] for record in records }
+        n_words_in_entry = sum(sentence_map.values())
+
+        vec_e = {}
+
+        for word_id in sentence_map:
+            count = sentence_map[word_id]
+            vec_e[word_id] = count / n_words_in_entry * math.log(n_entries / document_frequency(word_id), 10)
+
+        entry_score = cosine_similarity(vec_q, vec_e)
+
         candidates = ranking(candidates, (entry_id, entry_score))
 
     if len(candidates) == 0:
         return None
 
     for candidate in candidates:
-        print(entry_id_to_title(candidate[0]), candidate[1])
+        Logger.info(entry_id_to_title(candidate[0]) + " " + str(candidate[1]))
 
     return entry_id_to_title(candidates[0][0])
+
+def cosine_similarity(vec_q, vec_e):
+    total = 0
+
+    for word in vec_q:
+        if word in vec_e:
+            total += vec_q[word] * vec_e[word]
+
+    norm_q = math.sqrt(sum([x * x for x in vec_q.values()]))
+    norm_e = math.sqrt(sum([x * x for x in vec_e.values()]))
+
+    return total / (norm_q * norm_e)
 
 def entry_id_to_title(entry_id):
     Database.execute("select title from entries where id = %s", (entry_id,))
