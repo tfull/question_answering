@@ -2,8 +2,17 @@ from janome.tokenizer import Tokenizer
 from collections import defaultdict
 import math
 
-from . import database as Database
-from . import logger as Logger
+from .. import database as Database
+from .. import logger as Logger
+
+class Migrator:
+    pass
+
+class Loader:
+    pass
+
+class Answerer:
+    pass
 
 def build():
     Database.execute("drop table if exists m1_words")

@@ -29,16 +29,16 @@ def insert_plain_text(arguments):
 def method1_build(arguments):
     import erica.base
     import erica.master
-    import erica.brain
+    import erica.brain.basic
 
     erica.base.initialize()
-    erica.brain.build()
+    erica.brain.basic.build()
     erica.base.finalize()
 
 def method1_load(arguments):
     import erica.base
     import erica.master
-    import erica.brain
+    import erica.brain.basic
 
     inf = None
     sup = None
@@ -47,16 +47,16 @@ def method1_load(arguments):
         inf, sup = [int(x) for x in arguments[0].split(":")]
 
     erica.base.initialize()
-    erica.brain.load(inf, sup)
+    erica.brain.basic.load(inf, sup)
     erica.base.finalize()
 
 def method1_ask(arguments):
     import erica.base
     import erica.master
-    import erica.brain
+    import erica.brain.basic
 
     erica.base.initialize()
-    erica.brain.ask(arguments[0])
+    print(erica.brain.basic.ask(arguments[0]))
     erica.base.finalize()
 
 if __name__ == '__main__':
