@@ -4,7 +4,6 @@ import urllib
 
 import erica.base as Base
 import erica.config as Config
-import erica.brain as Brain
 import erica.command as Command
 import erica.reader as Reader
 
@@ -27,11 +26,15 @@ def index_get():
 
 @app.route("/", methods = ["POST"])
 def index_post():
+    from erica.brain.basic import BrainBasic
+
+    brain = BrainBasic()
+
     body = flask.request.get_data()
     data = urllib.parse.parse_qs(str(body, "UTF-8"))
     question = data["query"][0]
 
-    answer = Brain.ask(question)
+    answer = brain.ask(question)
 
     return flask.render_template("index.html", question = question, answer = answer)
 
