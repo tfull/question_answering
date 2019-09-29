@@ -35,7 +35,7 @@ class Logger:
 
     @classmethod
     def validate(cls):
-        if _LOGGER is None:
+        if cls._LOGGER is None:
             cls.initialize()
 
     @classmethod
