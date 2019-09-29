@@ -6,8 +6,8 @@ from sqlalchemy.sql import func
 
 from ..model import *
 from ..core import *
-from .master_constant import MasterConstant
-from .master_reader import MasterReader
+from .constant import MasterConstant
+from .reader import MasterReader
 
 
 class MasterBuilder:

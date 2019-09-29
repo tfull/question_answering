@@ -1,2 +1,2 @@
-from .master_builder import MasterBuilder
-from .master_reader import MasterReader
+from .builder import MasterBuilder
+from .reader import MasterReader

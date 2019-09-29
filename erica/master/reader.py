@@ -1,6 +1,6 @@
 import re
 
-from .master_constant import MasterConstant
+from .constant import MasterConstant
 
 
 RE_COMMENT    = re.compile(r"<!--.*?-->", re.DOTALL)
