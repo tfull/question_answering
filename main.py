@@ -1,11 +1,16 @@
 from erica.core import *
 from erica.model import *
+from erica.model.classic import *
 from erica.master import *
+from erica.method.classic import *
+from erica.test import *
 
+# Database.Base.metadata.drop_all(Database.Engine)
 # Database.Base.metadata.create_all(Database.Engine)
 
-# record = Database.Session.query(Entry).filter_by(id = 10).first()
+# MasterBuilder.load_entries()
+# MasterBuilder.load_plain_texts()
 
-# print(type(record))
-
-MasterBuilder.load_plain_texts()
+# TestClassic.load()
+# TestClassic.check_sample_questions()
+TestClassic.ask_one()

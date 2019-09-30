@@ -67,8 +67,8 @@ class MasterBuilder:
             session.commit()
             session.close()
 
-        log = "\033[2K\033[G" + "completed {} files!\n".format(len(paths))
-        sys.stdout.write(log)
+        log = "completed %s files!" % len(paths)
+        sys.stdout.write("\033[2K\033[G" + log + "\n")
         Logger.info(log)
 
     @classmethod
@@ -109,8 +109,8 @@ class MasterBuilder:
             session.commit()
             session.close()
 
-        log = "\033[2K\033[G" + "completed {} entries!\n".format(n_entries)
-        sys.stdout.write(log)
+        log = "completed %s entries!" % n_entries
+        sys.stdout.write("\033[2K\033[G" + log + "\n")
         Logger.info(log)
 
 
