@@ -1,8 +1,8 @@
 from sqlalchemy import *
 
-from ..core.database import Database
+from ..core.database import *
 
-class Redirection(Database.Base):
+class Redirection(Database.Base, ModelInterface):
     __tablename__ = "redirections"
 
     id = Column("id", Integer, primary_key = True)

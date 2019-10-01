@@ -1,9 +1,9 @@
 from sqlalchemy import *
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
-from ..core.database import Database
+from ..core.database import *
 
-class PlainText(Database.Base):
+class PlainText(Database.Base, ModelInterface):
     __tablename__ = "plain_texts"
 
     id = Column("id", Integer, primary_key = True)

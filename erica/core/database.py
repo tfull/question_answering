@@ -24,3 +24,25 @@ class Database:
 
     Base = declarative_base()
     Base.query = Session.query_property()
+
+
+class DatabaseError(Exception):
+    pass
+
+
+Session = Database.Session
+
+
+class ModelInterface:
+    @classmethod
+    def find(cls, item):
+        if type(item) == int:
+            return Session.query(cls).filter(cls.id == item).one()
+        else:
+            entries = Session.query(cls).filter(cls.id.in_(item)).all()
+            entry_map = { entry.id: entry for entry in entries }
+
+            try:
+                return [entry_map[record_id] for record_id in item]
+            except KeyError as e:
+                raise DatabaseError("invalid id included")
