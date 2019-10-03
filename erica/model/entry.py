@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from sqlalchemy.dialects.mysql import MEDIUMTEXT
+from sqlalchemy.dialects.mysql import *
 
 from ..core.database import *
 
@@ -7,8 +7,8 @@ class Entry(Database.Base, ModelInterface):
     __tablename__ = "entries"
 
     id = Column("id", Integer, primary_key = True)
-    title = Column("title", String(255), index = True, nullable = False)
-    content = Column("content", MEDIUMTEXT, nullable = False)
+    title = Column("title", VARCHAR(255, collation = "utf8_bin"), index = True, nullable = False)
+    content = Column("content", MEDIUMTEXT(collation = "utf8_bin"), nullable = False)
 
     @classmethod
     def id_to_title(cls, item):

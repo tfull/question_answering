@@ -12,7 +12,7 @@ class Database:
         Config.get("database.dbname"),
     )
 
-    Engine = create_engine(_URI, encoding = "utf-8", echo = False)
+    Engine = create_engine(_URI, encoding = "utf8", echo = False)
 
     Session = scoped_session(
         sessionmaker(

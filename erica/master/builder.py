@@ -62,10 +62,8 @@ class MasterBuilder:
             sys.stdout.write("\033[2K\033[G" + str(path))
             sys.stdout.flush()
 
-            session = Database.Session()
-            read(session, path)
-            session.commit()
-            session.close()
+            read(path)
+            Session.commit()
 
         log = "completed %s files!" % len(paths)
         sys.stdout.write("\033[2K\033[G" + log + "\n")
@@ -75,10 +73,8 @@ class MasterBuilder:
     def load_plain_texts(cls):
         chunk = 1000
 
-        session = Database.Session()
-        result = session.query(func.max(Entry.id).label("max_id")).first()
+        result = Session.query(func.max(Entry.id).label("max_id")).first()
         count = result.max_id
-        session.close()
 
         if count is None:
             raise Exception("no entries")
@@ -86,9 +82,7 @@ class MasterBuilder:
         n_entries = 0
 
         for i in range(1, count + chunk + 1, chunk):
-            session = Database.Session()
-
-            for record in session.query(Entry.id, Entry.content).filter(Entry.id >= i).filter(Entry.id < i + chunk):
+            for record in Session.query(Entry.id, Entry.content).filter(Entry.id >= i).filter(Entry.id < i + chunk):
                 content = record.content
                 entry_id = record.id
                 sys.stdout.write("\033[2K\033[Gentry: " + str(entry_id))
@@ -97,17 +91,16 @@ class MasterBuilder:
                 paragraphs = MasterReader.split_text_to_paragraphs(MasterReader.get_plain_text(content))
                 text = "\n".join([sentence[1] for sentence in paragraphs])
 
-                result = session.query(PlainText.id).filter(PlainText.entry_id == entry_id).first()
+                result = Session.query(PlainText.id).filter(PlainText.entry_id == entry_id).first()
 
                 if result is not None:
                     result.text = text
                 else:
-                    session.add(PlainText(entry_id = entry_id, text = text))
+                    Session.add(PlainText(entry_id = entry_id, text = text))
 
                 n_entries += 1
 
-            session.commit()
-            session.close()
+            Session.commit()
 
         log = "completed %s entries!" % n_entries
         sys.stdout.write("\033[2K\033[G" + log + "\n")
@@ -124,7 +117,7 @@ def write(body, path):
         f.write("</wikipedia>\n")
 
 
-def insert(session, page):
+def insert(page):
     title = page.find("title").text
 
     for rm in MasterConstant.extra_titles_ja:
@@ -137,7 +130,7 @@ def insert(session, page):
     if redirect is not None:
         target = redirect.attrib["title"]
         record = Redirection(source = title, target = target)
-        session.add(record)
+        Session.add(record)
         Logger.info("Redirect: " + title + " -> " + target)
         return
 
@@ -149,12 +142,12 @@ def insert(session, page):
         return 
 
     text = "".join(filter(lambda c: ord(c) < 0x10000, text))
-    record = Entry(title = title, content = text)
-    session.add(record)
+    entry = Entry(title = title, content = text)
+    Session.add(entry)
     Logger.info("Entry: " + title)
 
 
-def read(session, path):
+def read(path):
     tree = File.load_xml(path)
     for page in tree.findall("page"):
-        insert(session, page)
+        insert(page)

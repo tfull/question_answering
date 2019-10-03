@@ -12,5 +12,9 @@ from erica.test import *
 # MasterBuilder.load_plain_texts()
 
 # TestClassic.load()
-# TestClassic.check_sample_questions()
-TestClassic.ask_one()
+TestClassic.check_sample_questions()
+# TestClassic.ask_one()
+# TestModel.debug()
+
+# MethodClassic.load(1, 200)
+# MethodClassic.load(101, 300)

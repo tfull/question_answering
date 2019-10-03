@@ -1,8 +1,9 @@
 from sqlalchemy import *
+from sqlalchemy.dialects.mysql import *
 
-from ...core.database import Database
+from ...core.database import *
 
-class ClassicWordCount(Database.Base):
+class ClassicWordCount(Database.Base, ModelInterface):
     __tablename__ = "classic_word_counts"
 
     id = Column("id", BigInteger, primary_key = True)

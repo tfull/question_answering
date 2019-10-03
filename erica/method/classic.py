@@ -1,6 +1,6 @@
 from janome.tokenizer import Tokenizer
 from collections import defaultdict
-from sqlalchemy import distinct
+from sqlalchemy import distinct, and_
 from sqlalchemy.sql import func
 import math
 
@@ -15,9 +15,7 @@ class MethodClassic():
 
         tokenizer = Tokenizer()
 
-        session = Database.Session()
-        result = session.query(func.max(PlainText.entry_id).label("max_entry_id")).one()
-        session.close()
+        result = Session.query(func.max(PlainText.entry_id).label("max_entry_id")).one()
 
         if result is None:
             raise Exception("no entries in plain_texts")
@@ -29,60 +27,46 @@ class MethodClassic():
 
         min_entry_id = inf or 1
 
-        for bottom_entry_id in range(min_entry_id, max_entry_id + 1, chunk):
-            session = Database.Session()
-            top_entry_id = min(bottom_entry_id + chunk - 1, max_entry_id)
+        for entry_id in range(min_entry_id, max_entry_id):
+            delete_old_entry(entry_id)
 
-            old_records = session.query(ClassicWordCount).filter(ClassicWordCount.entry_id.between(bottom_entry_id, top_entry_id)).all()
+            plain_text_record = Session.query(PlainText.text).filter(PlainText.entry_id == entry_id).first()
 
-            if len(old_records) > 0:
-                session.delete(old_records)
+            if plain_text_record is None:
+                continue
 
-            for entry_id in range(bottom_entry_id, top_entry_id + 1):
-                record = session.query(PlainText.text).filter(PlainText.entry_id == entry_id).first()
+            dictionary = read_text(tokenizer, plain_text_record.text)
 
-                if record is None:
+            word_count_records = []
+
+            for word in dictionary:
+                if len(word) > 255:
                     continue
 
-                text = record.text
+                record_word = Session.query(ClassicWord).filter(ClassicWord.word == word).first()
 
-                dictionary = read_text(tokenizer, text)
+                if record_word is None:
+                    classic_word = ClassicWord(word = word, document_frequency = 1)
+                    Session.add(classic_word)
+                    Session.commit()
 
-                word_count_records = []
+                    word_id = classic_word.id
+                else:
+                    record_word.document_frequency += 1
+                    Session.commit()
+                    word_id = record_word.id
 
-                for word in dictionary:
-                    if len(word) > 255:
-                        continue
+                word_count_records.append(ClassicWordCount(entry_id = entry_id, classic_word_id = word_id, count = dictionary[word]))
 
-                    record_word = session.query(ClassicWord.id).filter(ClassicWord.word == word).first()
-
-                    if record_word is None:
-                        session_insert = Database.Session()
-
-                        classic_word = ClassicWord(word = word)
-
-                        session_insert.add(classic_word)
-                        session_insert.commit()
-
-                        word_id = classic_word.id
-                    else:
-                        word_id = record_word.id
-
-                    word_count_records.append(ClassicWordCount(entry_id = entry_id, classic_word_id = word_id, count = dictionary[word]))
-
-                session.bulk_save_objects(word_count_records)
-
-            session.commit()
-            session.close()
+            Session.bulk_save_objects(word_count_records)
+            Session.commit()
 
     @classmethod
     def ask(cls, question):
         tokenizer = Tokenizer()
         question_words = tokenizer.tokenize(question, wakati = True)
 
-        session = Database.Session()
-
-        n_entries = session.query(distinct(ClassicWordCount.entry_id)).count()
+        n_entries = Session.query(distinct(ClassicWordCount.entry_id)).count()
         Logger.info("%s entries in database" % n_entries)
 
         n_question_words = len(question_words)
@@ -91,45 +75,38 @@ class MethodClassic():
         word_count_map = count_words(question_words)
         Logger.info("word_count_map: %s" % word_count_map)
 
-        word_id_count_map = word_map_to_id_map(session, word_count_map)
-        Logger.info("word_id_count_map: %s" % word_id_count_map)
-
-        word_id_count_map = extract_important_words(session, word_id_count_map, 0.4, n_entries)
+        word_id_count_map = create_important_word_id_map(word_count_map, int(n_entries * 0.4))
         Logger.info("word_id_count_map: %s" % word_id_count_map)
 
         vec_q = word_id_count_map
 
-        entry_id_list = gather_related_entry_id_list(session, word_id_count_map)
+        entry_id_list = gather_related_entry_id_list(word_id_count_map)
         Logger.info("%s candidates" % len(entry_id_list))
 
         if len(entry_id_list) > n_entries * 0.8:
             return "[Ambiguous Question]"
-
-        # for entry_id in entry_id_list:
-        #     Logger.debug(entry_id_to_title(session, entry_id))
-
-        session.close()
-
-        # session.query(ClassicWordCount.entry_id, func.count("*")).group_by(ClassicWordCount.entry_id)
 
         candidates = []
 
         for entry_id in entry_id_list:
             Logger.debug("scoring entry_id = %s" % entry_id)
 
-            session = Database.Session()
-            records = session.query(ClassicWordCount).filter(ClassicWordCount.entry_id == entry_id).all()
+            records = Session.query(ClassicWordCount, ClassicWord).\
+                join(ClassicWord, and_(ClassicWordCount.classic_word_id == ClassicWord.id, ClassicWordCount.entry_id == entry_id)).\
+                all()
 
-            sentence_map = { record.classic_word_id: record.count for record in records }
+            sentence_map = { w.id: wc.count for (wc, w) in records }
+            frequency_map = { w.id: w.document_frequency for (_, w) in records }
             n_words_in_entry = sum(sentence_map.values())
 
-            Logger.debug("word gathered: % words" % n_words_in_entry)
+            Logger.debug("words gathered: %s words" % n_words_in_entry)
 
             vec_e = {}
 
             for word_id in sentence_map:
                 count = sentence_map[word_id]
-                vec_e[word_id] = count / n_words_in_entry * math.log(n_entries / document_frequency(session, word_id), 10)
+                document_frequency = frequency_map[word_id]
+                vec_e[word_id] = count / n_words_in_entry * math.log(n_entries / document_frequency, 10)
 
             entry_score = cosine_similarity(vec_q, vec_e)
 
@@ -137,20 +114,28 @@ class MethodClassic():
 
             candidates = ranking(candidates, (entry_id, entry_score))
 
-            session.close()
-
         if len(candidates) == 0:
             return None
 
-        session = Database.Session()
+        for entry_id, score in candidates:
+            Logger.info("%s: %s" % (Entry.id_to_title(entry_id), score))
 
-        for candidate in candidates:
-            Logger.info(entry_id_to_title(session, candidate[0]) + " " + str(candidate[1]))
+        return Entry.id_to_title(candidates[0][0])
 
-        answer = entry_id_to_title(session, candidates[0][0])
-        session.close()
 
-        return answer
+def delete_old_entry(entry_id):
+    old_records = Session.query(ClassicWordCount).\
+        filter(ClassicWordCount.entry_id == entry_id).\
+        all()
+
+    for classic_word in ClassicWord.find([x.classic_word_id for x in old_records]):
+        classic_word.document_frequency -= 1
+
+    Session.query(ClassicWordCount).\
+        filter(ClassicWordCount.entry_id == entry_id).\
+        delete()
+
+    Session.commit()
 
 
 def read_text(tokenizer, text):
@@ -177,26 +162,8 @@ def cosine_similarity(vec_q, vec_e):
     return total / (norm_q * norm_e)
 
 
-def entry_id_to_title(session, entry_id):
-    result = session.query(Entry.title).\
-        filter(Entry.id == entry_id).\
-        one()
-
-    return result.title
-
-
 def ranking(sorted_candidates, item):
     return sorted(sorted_candidates + [item], key = lambda x: -x[1])[:20]
-
-
-def extract_important_words(session, word_id_count_map, threshold, n_entries):
-    dictionary = {}
-
-    for word_id, count in word_id_count_map.items():
-        if document_frequency(session, word_id) / n_entries < threshold:
-            dictionary[word_id] = count
-
-    return dictionary
 
 
 def document_frequency(session, word_id):
@@ -204,25 +171,26 @@ def document_frequency(session, word_id):
         filter(ClassicWordCount.classic_word_id == word_id).\
         count()
 
+
 def count_words(words):
     dd = defaultdict(int)
 
     for word in words:
         dd[word] += 1
 
-    return dd
+    return dict(dd)
 
 
-def word_map_to_id_map(session, word_count_map):
-    records = session.query(ClassicWord).\
-        filter(ClassicWord.word.in_(word_count_map.keys())).\
+def create_important_word_id_map(word_count_map, threshold):
+    records = Session.query(ClassicWord).\
+        filter(ClassicWord.word.in_(word_count_map.keys()), ClassicWord.document_frequency <= threshold).\
         all()
 
     return { record.id: word_count_map[record.word] for record in records }
 
 
-def gather_related_entry_id_list(session, word_id_count_map):
-    records = session.query(ClassicWordCount.entry_id).\
+def gather_related_entry_id_list(word_id_count_map):
+    records = Session.query(ClassicWordCount.entry_id).\
         filter(ClassicWordCount.classic_word_id.in_(word_id_count_map.keys())).\
         group_by(ClassicWordCount.entry_id).\
         all()
