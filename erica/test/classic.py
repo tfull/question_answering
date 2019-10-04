@@ -9,11 +9,9 @@ from .constant import TestConstant
 class TestClassic:
     @classmethod
     def load(cls):
-        session = Database.Session()
-
         title_list = [item["answer"] for item in TestConstant.sample_qa_list]
 
-        records = session.query(Entry.id, Entry.title).filter(Entry.title.in_(title_list)).all()
+        records = Session.query(Entry.id, Entry.title).filter(Entry.title.in_(title_list)).all()
 
         for record in records:
             entry_id = record.id
@@ -25,8 +23,6 @@ class TestClassic:
             Logger.info(log)
 
             MethodClassic.load(inf_id, sup_id)
-
-        session.close()
 
     @classmethod
     def ask_one(cls):
