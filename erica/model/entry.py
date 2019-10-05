@@ -1,4 +1,6 @@
+import random
 from sqlalchemy import *
+from sqlalchemy.sql import func
 from sqlalchemy.dialects.mysql import *
 
 from ..core.database import *
@@ -22,3 +24,15 @@ class Entry(Database.Base, ModelInterface):
                 return [title_map[record_id] for record_id in item]
             except KeyError:
                 raise DatabaseError("invalid id included")
+
+    @classmethod
+    def sample(cls, count = None):
+        result = Session.query(func.max(cls.id).label("max_id")).one()
+        max_id = result.max_id
+
+        if count is None:
+            target_id = random.randint(1, max_id)
+            return cls.find(target_id)
+        else:
+            id_list = random.sample(range(1, max_id + 1), count)
+            return cls.find(id_list)
