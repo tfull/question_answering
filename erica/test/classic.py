@@ -7,6 +7,12 @@ from .constant import TestConstant
 
 
 class TestClassic:
+    methods = [
+        "load",
+        "ask_one",
+        "check_sample_questions"
+    ]
+
     @classmethod
     def load(cls):
         title_list = [item["answer"] for item in TestConstant.sample_qa_list]

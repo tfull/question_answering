@@ -1,4 +1,6 @@
 class TestConstant:
+    methods = []
+
     sample_qa_list = [
         {
             "question": "戦国時代の武将であり、本能寺で織田信長を討ったのは誰？",
