@@ -11,8 +11,9 @@ values:
     wikipedia: # workspace.wikipedia
     resource: # workspace.resource
 
-  api:
-      port: # api.port
+  server:
+      host: # server.host
+      port: # server.port
 
   log:
     level: # log.level
@@ -31,29 +32,10 @@ environments:
     wikipedia: ERICA_WORKSPACE_WIKIPEDIA
     resource: ERICA_WORKSPACE_RESOURCE
 
-  api:
-    port: ERICA_API_PORT
+  server:
+    host: ERICA_SERVER_HOST
+    port: ERICA_SERVER_PORT
 
   log:
     level: ERICA_LOG_LEVEL
     path: ERICA_LOG_PATH
-
-types:
-  database:
-    user: string
-    password: string
-    dbname: string
-    host: string
-    charset: string
-
-  workspace:
-    root: string
-    wikipedia: string
-    resource: string
-
-  api:
-    port: integer
-
-  log:
-    level: string
-    path: string

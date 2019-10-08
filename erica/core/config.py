@@ -9,8 +9,29 @@ class Config:
     PATH = os.path.dirname(os.path.abspath(__file__)) + "/../../config.yml"
     VALUES = None
     ENVIRONMENTS = None
-    TYPES = None
     LOADED = False
+
+    TYPES = {
+        "database": {
+            "user": "string",
+            "password": "string",
+            "dbname": "string",
+            "host": "string"
+        },
+        "workspace": {
+            "root": "string",
+            "wikipedia": "string",
+            "resource": "string"
+        },
+        "server": {
+            "host": "string",
+            "port": "integer"
+        },
+        "log": {
+            "level": "string",
+            "path": "string"
+        }
+    }
 
     @classmethod
     def load(cls):
@@ -31,11 +52,6 @@ class Config:
             cls.ENVIRONMENTS = data["environments"]
         else:
             raise ConfigError("environments not found")
-
-        if "types" in data:
-            cls.TYPES = data["types"]
-        else:
-            raise ConfigError("types not found")
 
         cls.LOADED = True
 

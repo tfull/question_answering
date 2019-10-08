@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     command = sys.argv[1]
 
-    if command in test_names:
+    if command not in batch_names:
         sys.stderr.write("no such batch command\n")
         sys.exit(1)
 
