@@ -5,13 +5,41 @@
   <title>質問応答</title>
 </head>
 <body>
-  <form method="post" action="">
-    <textarea name="query" rows="5" cols="40" placeholder="質問を入力してください。"></textarea>
-    <input type="submit" value="尋ねる" />
-  </form>
-  <div>
-    <div id="question">{{ question }}</div>
-    <div id="answer">{{ answer }}</div>
-  </div>
+  <script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script>
+    $(function() {
+      $("#ask").click(function() {
+        var question = $("#question").val();
+        $("#question").val("");
+        $("#ask").prop("disabled", true);
+        $("#queue").text(question);
+
+        $.ajax({
+          type: "post",
+          url: "/api/ask",
+          data: JSON.stringify({ question: question }),
+          contentType: "application/json",
+          dataType: "json",
+          success: function(json_data) {
+            // $("#answer").text(json_data.answer);
+            $("#history").append(
+              $("<div>").addClass("question").text($("#queue").text())
+            ).append(
+              $("<div>").addClass("answer").text(json_data.answer)
+            );
+            $("#queue").text("");
+          },
+          complete: function() {
+            $("#ask").prop("disabled", false);
+            $("#queue").text("");
+          }
+        });
+      });
+    });
+  </script>
+  <textarea id="question" name="query" rows="5" cols="40" placeholder="質問を入力してください。"></textarea>
+  <button id="ask" type="button">尋ねる</button>
+  <div id="queue"></div>
+  <div id="history"></div>
 </body>
 </html>

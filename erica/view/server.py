@@ -34,18 +34,14 @@ def index_get():
     return flask.render_template("index.html")
 
 
-@app.route("/", methods = ["POST"])
-def index_post():
-    body = flask.request.get_data()
-    data = urllib.parse.parse_qs(str(body, "utf8"))
-    question = data["query"][0]
+@app.route("/api/ask", methods = ["POST"])
+def api_ask_post():
+    body = flask.request.json
+    question = body["question"]
 
     answer = MethodClassic.ask(question)
 
-    return flask.render_template("index.html",
-        question = question,
-        answer = answer
-    )
+    return flask.jsonify(answer = answer)
 
 
 class Server:
