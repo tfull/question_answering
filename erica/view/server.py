@@ -11,6 +11,11 @@ from ..method import *
 app = flask.Flask(__name__, static_folder="static", template_folder="templates")
 
 
+@app.route("/", methods = ["GET"])
+def index_get():
+    return flask.render_template("index.html")
+
+
 @app.route("/debug", methods = ["GET"])
 def debug_get():
     entry = Entry.sample()
@@ -27,11 +32,6 @@ def debug_get():
         segmented_content = segmented_content,
         segmented_surface = segmented_surface
     )
-
-
-@app.route("/", methods = ["GET"])
-def index_get():
-    return flask.render_template("index.html")
 
 
 @app.route("/api/ask", methods = ["POST"])

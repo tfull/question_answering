@@ -1,6 +1,6 @@
 from janome.tokenizer import Tokenizer
 from collections import defaultdict
-from sqlalchemy import distinct, and_
+from sqlalchemy import distinct, and_, desc
 from sqlalchemy.sql import func
 import math
 
@@ -9,6 +9,10 @@ from ..model import *
 from ..model.classic import *
 
 class MethodClassic():
+    FINAL_ENTRY_COUNT = 20
+    CANDIDATE_CAPACITY = 100
+    MAX_SELECT_ENTRY_COUNT = 1000
+
     @classmethod
     def load(cls, inf = None, sup = None):
         chunk = 100
@@ -80,11 +84,19 @@ class MethodClassic():
 
         vec_q = word_id_count_map
 
-        entry_id_list = gather_related_entry_id_list(word_id_count_map)
-        Logger.info("%s candidates" % len(entry_id_list))
+        entry_property_list = gather_related_entry_property_list(word_id_count_map)
+        selected_entry_count = len(entry_property_list)
 
-        if len(entry_id_list) > n_entries * 0.8:
-            return "[Ambiguous Question]"
+        if selected_entry_count >= cls.MAX_SELECT_ENTRY_COUNT:
+            Logger.info("%s over candidates" % cls.MAX_SELECT_ENTRY_COUNT)
+        else:
+            Logger.info("%s candidates" % selected_entry_count)
+
+        if selected_entry_count == 0:
+            return None
+
+        entry_id_list = narrow_down_candidates(entry_property_list)
+        Logger.info("debug: %s candidates" % len(entry_id_list))
 
         candidates = []
 
@@ -112,10 +124,9 @@ class MethodClassic():
 
             Logger.debug("scored: %s" % entry_score)
 
-            candidates = ranking(candidates, (entry_id, entry_score))
+            candidates.append((entry_id, entry_score))
 
-        if len(candidates) == 0:
-            return None
+        candidates = ranking(candidates)
 
         for entry_id, score in candidates:
             Logger.info("%s: %s" % (Entry.id_to_title(entry_id), score))
@@ -162,14 +173,8 @@ def cosine_similarity(vec_q, vec_e):
     return total / (norm_q * norm_e)
 
 
-def ranking(sorted_candidates, item):
-    return sorted(sorted_candidates + [item], key = lambda x: -x[1])[:20]
-
-
-def document_frequency(session, word_id):
-    return session.query(ClassicWordCount).\
-        filter(ClassicWordCount.classic_word_id == word_id).\
-        count()
+def ranking(candidates):
+    return sorted(candidates, key = lambda x: -x[1])[: MethodClassic.FINAL_ENTRY_COUNT]
 
 
 def count_words(words):
@@ -189,11 +194,22 @@ def create_important_word_id_map(word_count_map, threshold):
     return { record.id: word_count_map[record.word] for record in records }
 
 
-def gather_related_entry_id_list(word_id_count_map):
-    records = Session.query(ClassicWordCount.entry_id).\
+def gather_related_entry_property_list(word_id_count_map):
+    records = Session.query(
+            ClassicWordCount.entry_id,
+            func.sum(ClassicWordCount.count).label("frequency"),
+            func.count(ClassicWordCount.count).label("kind")
+        ).\
         filter(ClassicWordCount.classic_word_id.in_(word_id_count_map.keys())).\
         group_by(ClassicWordCount.entry_id).\
+        order_by(desc("frequency")).\
+        limit(MethodClassic.MAX_SELECT_ENTRY_COUNT).\
         all()
 
-    return [record.entry_id for record in records]
- 
+    return records
+
+
+def narrow_down_candidates(entry_property_list):
+    items = [(record.entry_id, record.frequency * record.kind) for record in entry_property_list]
+    items = sorted(items, key = lambda x: - x[1])
+    return [x[0] for x in items][: MethodClassic.CANDIDATE_CAPACITY]
