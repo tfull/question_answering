@@ -11,28 +11,6 @@ class Config:
     ENVIRONMENTS = None
     LOADED = False
 
-    TYPES = {
-        "database": {
-            "user": "string",
-            "password": "string",
-            "dbname": "string",
-            "host": "string"
-        },
-        "workspace": {
-            "root": "string",
-            "wikipedia": "string",
-            "resource": "string"
-        },
-        "server": {
-            "host": "string",
-            "port": "integer"
-        },
-        "log": {
-            "level": "string",
-            "path": "string"
-        }
-    }
-
     @classmethod
     def load(cls):
         if cls.LOADED:
@@ -67,8 +45,7 @@ class Config:
             if environment is None:
                 raise ConfigError("{} is defined neither values nor environments".format(key))
 
-            type_of_value = get_from_key(cls.TYPES, key)
-            value = cast(environment, type_of_value)
+            value = environment
 
         return value
 
@@ -81,12 +58,3 @@ def get_from_key(data, key, must = False):
         data = data[k]
 
     return data
-
-
-def cast(value, type_of_value):
-    if type_of_value == "string":
-        return str(value)
-    elif type_of_value == "integer":
-        return int(value)
-    else:
-        raise ConfigError("no type {}".format(type_of_value))

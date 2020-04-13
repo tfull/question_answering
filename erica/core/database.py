@@ -5,11 +5,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from .config import Config
 
 class Database:
-    _URI = "mysql://%s:%s@%s/%s?charset=utf8" % (
+    _URI = "mysql://%s:%s@%s:%s/%s?charset=utf8" % (
         Config.get("database.user"),
         Config.get("database.password"),
         Config.get("database.host"),
-        Config.get("database.dbname"),
+        Config.get("database.port"),
+        Config.get("database.name"),
     )
 
     Engine = create_engine(_URI, encoding = "utf8", echo = False)

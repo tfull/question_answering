@@ -48,4 +48,4 @@ class Server:
     @classmethod
     def start(cls):
         global app
-        app.run(host = Config.get("server.host"), port = Config.get("server.port"))
+        app.run(host = Config.get("server.host"), port = int(Config.get("server.port")))

@@ -2,9 +2,9 @@ values:
   database:
     user: # database.user
     password: # database.password
-    dbname: # database.dbname
+    name: # database.dbname
     host: # database.host
-    charset: # database.charset
+    port: # database.port
 
   workspace:
     root: # workspace.root
@@ -23,9 +23,9 @@ environments:
   database:
     user: ERICA_DATABASE_USER
     password: ERICA_DATABASE_PASSWORD
-    dbname: ERICA_DATABASE_DBNAME
+    name: ERICA_DATABASE_DBNAME
     host: ERICA_DATABASE_HOST
-    charset: ERICA_DATABASE_CHARSET
+    port: ERICA_DATABASE_PORT
 
   workspace:
     root: ERICA_WORKSPACE_ROOT
