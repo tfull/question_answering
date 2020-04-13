@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <link rel="stylesheet" href="/static/css/index.css" type="text/css" />
   <title>質問応答</title>
 </head>
 <body>
@@ -12,7 +13,8 @@
         var question = $("#question").val();
         $("#question").val("");
         $("#ask").prop("disabled", true);
-        $("#queue").text(question);
+        $("#queue-body").text(question);
+        $("#queue-header").text("質問中")
 
         $.ajax({
           type: "post",
@@ -21,25 +23,32 @@
           contentType: "application/json",
           dataType: "json",
           success: function(json_data) {
-            // $("#answer").text(json_data.answer);
-            $("#history").append(
-              $("<div>").addClass("question").text($("#queue").text())
+            $("#history-body").append(
+              $("<div>").addClass("question").text($("#queue-body").text())
             ).append(
               $("<div>").addClass("answer").text(json_data.answer)
             );
-            $("#queue").text("");
           },
           complete: function() {
             $("#ask").prop("disabled", false);
-            $("#queue").text("");
+            $("#queue-body").text("");
+            $("#queue-header").text("質問可能")
           }
         });
       });
     });
   </script>
-  <textarea id="question" name="query" rows="5" cols="40" placeholder="質問を入力してください。"></textarea>
-  <button id="ask" type="button">尋ねる</button>
-  <div id="queue"></div>
-  <div id="history"></div>
+  <div id="whole">
+    <textarea id="question" name="query" rows="5" cols="40" placeholder="質問を入力してください。"></textarea>
+    <button id="ask" type="button">尋ねる</button>
+    <div id="queue">
+      <div id="queue-header">質問可能</div>
+      <div id="queue-body"></div>
+    </div>
+    <div id="history">
+      <div id="history-header">質問履歴</div>
+      <div id="history-body"></div>
+    </div>
+  </div>
 </body>
 </html>
