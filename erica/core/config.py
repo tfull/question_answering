@@ -6,7 +6,6 @@ class ConfigError(Exception):
     pass
 
 class Config:
-    PATH = os.path.dirname(os.path.abspath(__file__)) + "/../../config.yml"
     VALUES = None
     ENVIRONMENTS = None
     LOADED = False
@@ -16,10 +15,15 @@ class Config:
         if cls.LOADED:
             return
 
-        if not os.path.isfile(cls.PATH):
-            raise ConfigError("file {} does not exist".format(cls.PATH))
+        path = os.environ.get("ERICA_CONFIG_PATH")
 
-        data = File.load_yaml(cls.PATH)
+        if path is None:
+            path = os.path.dirname(os.path.abspath(__file__)) + "/../../config.yml"
+
+        if not os.path.isfile(path):
+            raise ConfigError("file {} does not exist".format(path))
+
+        data = File.load_yaml(path)
 
         if "values" in data:
             cls.VALUES = data["values"]
