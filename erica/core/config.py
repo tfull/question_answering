@@ -2,8 +2,10 @@ import os
 
 from .file import File
 
+
 class ConfigError(Exception):
     pass
+
 
 class Config:
     VALUES = None
