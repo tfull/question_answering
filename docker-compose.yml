@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+    server:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        working_dir: /home/server
+        tty: true
+        user: server
+        volumes:
+            - ./workspace:/home/server/workspace
+        ports:
+            - "8000:8000"
+
+    database:
+        image: mysql:5.7
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: erica
+            MYSQL_USER: erica
+            MYSQL_PASSWORD: erica
+            TZ: "Asia/Tokyo"
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - storage:/var/lib/mysql
+
+volumes:
+    storage:
+        driver: local
