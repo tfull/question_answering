@@ -2,3 +2,5 @@
 __pycache__/
 *.log
 /workspace/
+.ipynb_checkpoints/
+docker-compose.override.yml

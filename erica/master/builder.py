@@ -20,6 +20,8 @@ class MasterBuilder:
         fname = Config.get("workspace.root") + "/" + Config.get("workspace.wikipedia")
         dirname = Config.get("workspace.root") + "/" + Config.get("workspace.resource")
 
+        os.makedirs(dirname, exist_ok = True)
+
         flag = False
         body = []
         item_n = 0

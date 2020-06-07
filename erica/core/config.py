@@ -2,46 +2,30 @@ import os
 
 from .file import File
 
+
 class ConfigError(Exception):
     pass
 
+
 class Config:
-    PATH = os.path.dirname(os.path.abspath(__file__)) + "/../../config.yml"
     VALUES = None
     ENVIRONMENTS = None
     LOADED = False
-
-    TYPES = {
-        "database": {
-            "user": "string",
-            "password": "string",
-            "dbname": "string",
-            "host": "string"
-        },
-        "workspace": {
-            "root": "string",
-            "wikipedia": "string",
-            "resource": "string"
-        },
-        "server": {
-            "host": "string",
-            "port": "integer"
-        },
-        "log": {
-            "level": "string",
-            "path": "string"
-        }
-    }
 
     @classmethod
     def load(cls):
         if cls.LOADED:
             return
 
-        if not os.path.isfile(cls.PATH):
-            raise ConfigError("file {} does not exist".format(cls.PATH))
+        path = os.environ.get("ERICA_CONFIG_PATH")
 
-        data = File.load_yaml(cls.PATH)
+        if path is None:
+            path = os.path.dirname(os.path.abspath(__file__)) + "/../../config.yml"
+
+        if not os.path.isfile(path):
+            raise ConfigError("file {} does not exist".format(path))
+
+        data = File.load_yaml(path)
 
         if "values" in data:
             cls.VALUES = data["values"]
@@ -67,8 +51,7 @@ class Config:
             if environment is None:
                 raise ConfigError("{} is defined neither values nor environments".format(key))
 
-            type_of_value = get_from_key(cls.TYPES, key)
-            value = cast(environment, type_of_value)
+            value = environment
 
         return value
 
@@ -81,12 +64,3 @@ def get_from_key(data, key, must = False):
         data = data[k]
 
     return data
-
-
-def cast(value, type_of_value):
-    if type_of_value == "string":
-        return str(value)
-    elif type_of_value == "integer":
-        return int(value)
-    else:
-        raise ConfigError("no type {}".format(type_of_value))
