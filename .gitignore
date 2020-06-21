@@ -1,4 +1,5 @@
 /config.yml
+/config.docker.yml
 __pycache__/
 *.log
 /workspace/

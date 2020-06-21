@@ -8,8 +8,10 @@ services:
         working_dir: /home/server
         tty: true
         user: server
+        command: bash start.sh
         volumes:
             - ./workspace:/home/server/workspace
+            - ./experiments:/home/server/experiments
         ports:
             - "8000:8000"
 

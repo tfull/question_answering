@@ -17,7 +17,7 @@ class MasterBuilder:
         re_end = re.compile(r"</page>")
         chunk = 10000
 
-        fname = Config.get("workspace.root") + "/" + Config.get("workspace.wikipedia")
+        fname = Config.get("corpus.root") + "/" + Config.get("corpus.file.wikipedia")
         dirname = Config.get("workspace.root") + "/" + Config.get("workspace.resource")
 
         os.makedirs(dirname, exist_ok = True)
