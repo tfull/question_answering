@@ -133,6 +133,15 @@ class MethodClassic():
 
         return Entry.id_to_title(candidates[0][0])
 
+    @classmethod
+    def clear_all(cls):
+        Session.query(ClassicWordCount).delete()
+
+        for x in Session.query(ClassicWord).all():
+            x.document_frequency = 0
+
+        Session.commit()
+
 
 def delete_old_entry(entry_id):
     old_records = Session.query(ClassicWordCount).\

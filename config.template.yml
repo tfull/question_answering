@@ -8,7 +8,6 @@ values:
 
   workspace:
     root: # workspace.root
-    wikipedia: # workspace.wikipedia
     resource: # workspace.resource
 
   server:
@@ -18,6 +17,11 @@ values:
   log:
     level: # log.level
     path: # log.path
+
+  corpus:
+    root: # corpus.root
+    file:
+      wikipedia: # corpus.file.wikipedia
 
 environments:
   database:
